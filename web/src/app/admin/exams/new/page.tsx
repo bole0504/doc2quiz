@@ -56,6 +56,17 @@ export default async function NewExamPage() {
               </div>
             </div>
 
+            <div className="grid gap-1">
+              <Label htmlFor="timeLimitMinutes">Thời gian (phút)</Label>
+              <Input
+                id="timeLimitMinutes"
+                name="timeLimitMinutes"
+                type="number"
+                min={1}
+                placeholder="Không giới hạn"
+              />
+            </div>
+
             <Button type="submit">Tạo</Button>
           </Form>
         </CardContent>

@@ -177,6 +177,17 @@ export default async function BankDetailPage({
             </div>
           </div>
 
+          <div className="grid gap-1">
+            <Label htmlFor="timeLimitMinutes">Thời gian (phút)</Label>
+            <Input
+              id="timeLimitMinutes"
+              name="timeLimitMinutes"
+              type="number"
+              min={1}
+              placeholder="Không giới hạn"
+            />
+          </div>
+
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Button type="submit">Tạo bộ đề</Button>
             <div className="text-xs text-zinc-500">

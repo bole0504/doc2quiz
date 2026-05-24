@@ -91,6 +91,7 @@ model Exam {
   questionsPerTest Int
   maxWrongAllowed  Int
   variantCount     Int         @default(10)
+  timeLimitMinutes Int?
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 

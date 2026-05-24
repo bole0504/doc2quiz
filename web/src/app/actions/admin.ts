@@ -189,6 +189,10 @@ export async function createExam(formData: FormData) {
     questionsPerTest: z.coerce.number().int().min(1),
     maxWrongAllowed: z.coerce.number().int().min(0),
     variantCount: z.coerce.number().int().min(1).max(50),
+    timeLimitMinutes: z.preprocess(
+      (v) => (v === "" || v === null || v === undefined ? undefined : v),
+      z.coerce.number().int().min(1).max(24 * 60).optional(),
+    ),
     returnTo: z.string().optional().nullable(),
   });
 
@@ -198,6 +202,7 @@ export async function createExam(formData: FormData) {
     questionsPerTest: formData.get("questionsPerTest"),
     maxWrongAllowed: formData.get("maxWrongAllowed"),
     variantCount: formData.get("variantCount"),
+    timeLimitMinutes: formData.get("timeLimitMinutes"),
     returnTo: formData.get("returnTo"),
   });
 
@@ -225,6 +230,7 @@ export async function createExam(formData: FormData) {
       questionsPerTest: data.questionsPerTest,
       maxWrongAllowed: data.maxWrongAllowed,
       variantCount: data.variantCount,
+      timeLimitMinutes: data.timeLimitMinutes ?? null,
     },
   });
 

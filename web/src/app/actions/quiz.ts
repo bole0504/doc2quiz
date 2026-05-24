@@ -4,10 +4,18 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { finalizeAttempt } from "@/lib/quiz/finalizeAttempt";
 
 function parseQuestionIds(value: unknown): string[] {
   if (Array.isArray(value) && value.every((v) => typeof v === "string")) return value;
   return [];
+}
+
+function isTimedOut(args: { startedAt: Date; timeLimitMinutes: number | null | undefined }) {
+  const { startedAt, timeLimitMinutes } = args;
+  if (!timeLimitMinutes) return false;
+  const deadlineMs = startedAt.getTime() + timeLimitMinutes * 60 * 1000;
+  return Date.now() >= deadlineMs;
 }
 
 export async function openVariant(formData: FormData) {
@@ -51,6 +59,11 @@ export async function answerCurrentQuestion(formData: FormData) {
   });
   if (!attempt) throw new Error("Attempt not found");
 
+  if (isTimedOut({ startedAt: attempt.startedAt, timeLimitMinutes: attempt.variant.exam.timeLimitMinutes })) {
+    await finalizeAttempt({ attemptId: attempt.id });
+    redirect("/quiz");
+  }
+
   const variantQuestionIds = parseQuestionIds(attempt.variant.questionIds);
   const currentIndex = attempt.currentIndex;
   const expectedQuestionId = variantQuestionIds[currentIndex];
@@ -72,45 +85,37 @@ export async function answerCurrentQuestion(formData: FormData) {
     redirect(`/quiz/${data.variantId}`);
   }
 
-  // Finish: score
-  const questions = await prisma.question.findMany({
-    where: { id: { in: variantQuestionIds } },
-    select: { id: true, correctOption: true, isCritical: true },
-  });
-
-  const questionById: Map<
-    string,
-    { id: string; correctOption: string | null; isCritical: boolean }
-  > = new Map(questions.map((q) => [q.id, q] as const));
-
-  let correct = 0;
-  let wrong = 0;
-  let criticalWrong = false;
-
-  for (const qid of variantQuestionIds) {
-    const q = questionById.get(qid);
-    const selected = answers[qid];
-    const expected = q?.correctOption ?? null;
-    const isRight = expected && selected === expected;
-    if (isRight) correct += 1;
-    else wrong += 1;
-    if (q?.isCritical && !isRight) criticalWrong = true;
-  }
-
-  const maxWrongAllowed = attempt.variant.exam.maxWrongAllowed;
-  const status = criticalWrong || wrong > maxWrongAllowed ? "FAILED" : "PASSED";
-
   await prisma.attempt.update({
     where: { id: attempt.id },
     data: {
       answers,
       currentIndex: variantQuestionIds.length,
-      finishedAt: new Date(),
-      score: correct,
-      status,
     },
   });
 
+  await finalizeAttempt({ attemptId: attempt.id });
+  redirect("/quiz");
+}
+
+export async function submitAttempt(formData: FormData) {
+  const user = await requireUser();
+
+  const schema = z.object({
+    attemptId: z.string().min(1),
+    variantId: z.string().min(1),
+  });
+
+  const data = schema.parse({
+    attemptId: formData.get("attemptId"),
+    variantId: formData.get("variantId"),
+  });
+
+  const attempt = await prisma.attempt.findFirst({
+    where: { id: data.attemptId, userId: user.id, variantId: data.variantId, finishedAt: null },
+  });
+  if (!attempt) redirect("/quiz");
+
+  await finalizeAttempt({ attemptId: attempt.id });
   redirect("/quiz");
 }
 

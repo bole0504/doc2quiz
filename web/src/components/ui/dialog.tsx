@@ -52,6 +52,10 @@ export function DialogDescription({
 }
 
 export function DialogBody({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("p-5", className)} {...props} />;
+  return (
+    <div
+      className={cn("max-h-[70vh] overflow-y-auto p-5 overscroll-contain", className)}
+      {...props}
+    />
+  );
 }
-

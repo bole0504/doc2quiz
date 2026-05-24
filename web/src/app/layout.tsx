@@ -34,7 +34,7 @@ export default async function RootLayout({
       lang="vi"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-gradient-to-br from-indigo-50 via-white to-emerald-50 text-zinc-900">
+      <body className="min-h-full overflow-y-auto flex flex-col bg-gradient-to-br from-indigo-50 via-white to-emerald-50 text-zinc-900">
         <header className="sticky top-0 z-10 border-b border-white/50 bg-white/75 backdrop-blur">
           <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
             <div className="flex items-center gap-4">

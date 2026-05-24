@@ -88,7 +88,8 @@ function matchesRule(style: RunStyle, rule: CorrectAnswerRule) {
   if (rule.font) {
     const a = style.font?.toLowerCase();
     const b = rule.font.toLowerCase();
-    if (!a || a !== b) return false;
+    // Some DOCX files don't specify font at run-level; in that case, don't fail the match.
+    if (a && a !== b) return false;
   }
   if (typeof rule.bold === "boolean") {
     if (style.bold === undefined || style.bold !== rule.bold) return false;
@@ -96,10 +97,14 @@ function matchesRule(style: RunStyle, rule: CorrectAnswerRule) {
   if (typeof rule.italic === "boolean") {
     if (style.italic === undefined || style.italic !== rule.italic) return false;
   }
-  if (rule.sizeHalfPoints && style.size !== rule.sizeHalfPoints) return false;
+  if (rule.sizeHalfPoints) {
+    // Some DOCX files omit size at run-level; only enforce when present.
+    if (style.size && style.size !== rule.sizeHalfPoints) return false;
+  }
   if (rule.colorHex) {
     const c = style.color?.toUpperCase();
-    if (!c || c !== rule.colorHex.toUpperCase()) return false;
+    // Some DOCX files omit color at run-level; only enforce when present.
+    if (c && c !== rule.colorHex.toUpperCase()) return false;
   }
   return true;
 }
