@@ -18,7 +18,7 @@ const prisma = new PrismaClient({
 
 const adminEmail = process.env.APP_SEED_ADMIN_EMAIL ?? "admin@example.com";
 const adminPassword = process.env.APP_SEED_ADMIN_PASSWORD ?? "admin123";
-const userEmail = process.env.APP_SEED_USER_EMAIL ?? "user@example.com";
+const userPhone = process.env.APP_SEED_USER_PHONE ?? "0900000001";
 const userPassword = process.env.APP_SEED_USER_PASSWORD ?? "user123";
 
 async function main() {
@@ -27,16 +27,28 @@ async function main() {
     bcrypt.hash(userPassword, 12),
   ]);
 
+  // Admin uses email (web login)
   await prisma.user.upsert({
     where: { email: adminEmail },
     update: { passwordHash: adminHash, role: "ADMIN" },
-    create: { email: adminEmail, passwordHash: adminHash, role: "ADMIN" },
+    create: {
+      email: adminEmail,
+      name: "Admin",
+      passwordHash: adminHash,
+      role: "ADMIN",
+    },
   });
 
+  // User uses phone (mobile + web login)
   await prisma.user.upsert({
-    where: { email: userEmail },
+    where: { phone: userPhone },
     update: { passwordHash: userHash, role: "USER" },
-    create: { email: userEmail, passwordHash: userHash, role: "USER" },
+    create: {
+      phone: userPhone,
+      name: "User Demo",
+      passwordHash: userHash,
+      role: "USER",
+    },
   });
 
   await prisma.category.upsert({
@@ -45,8 +57,8 @@ async function main() {
     create: { slug: "general", name: "General" },
   });
 
-  console.log(`Seeded admin: ${adminEmail} (password: ${adminPassword})`);
-  console.log(`Seeded user:  ${userEmail} (password: ${userPassword})`);
+  console.log(`Seeded admin: ${adminEmail} / ${adminPassword}  (email login)`);
+  console.log(`Seeded user:  ${userPhone}  / ${userPassword}   (phone login)`);
 }
 
 main()

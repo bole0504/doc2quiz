@@ -1,0 +1,5 @@
+{
+  "name": "docx2quiz",
+  "private": true,
+  "workspaces": ["packages/*", "web", "mobile"]
+}

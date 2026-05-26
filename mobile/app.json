@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "doc2quiz",
+    "slug": "docx2quiz",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "docx2quiz",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.docx2quiz.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#5B5BD6"
+      },
+      "package": "com.docx2quiz.app"
+    },
+    "plugins": ["expo-router", "expo-secure-store"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

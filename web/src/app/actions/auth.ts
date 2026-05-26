@@ -2,18 +2,27 @@
 
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
-import { createSession, clearSession } from "@/lib/auth";
-import { verifyPassword } from "@/lib/password";
+import {
+  loginWithCredentials,
+  registerUser,
+  revokeSessionCookie,
+  setSessionCookie,
+} from "@/lib/services/authService";
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  identifier: z.string().min(1), // phone or email
   password: z.string().min(1),
+});
+
+const registerSchema = z.object({
+  phone: z.string().regex(/^0\d{9}$/, "Số điện thoại không hợp lệ (10 số, bắt đầu bằng 0)"),
+  name: z.string().min(1, "Vui lòng nhập tên"),
+  password: z.string().min(6, "Mật khẩu tối thiểu 6 ký tự"),
 });
 
 export async function login(formData: FormData) {
   const parsed = loginSchema.safeParse({
-    email: formData.get("email"),
+    identifier: formData.get("identifier"),
     password: formData.get("password"),
   });
 
@@ -21,19 +30,42 @@ export async function login(formData: FormData) {
     redirect("/login?error=invalid");
   }
 
-  const { email, password } = parsed.data;
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) redirect("/login?error=auth");
+  const { identifier, password } = parsed.data;
+  try {
+    const { token, expiresAt, user } = await loginWithCredentials(identifier, password);
+    await setSessionCookie(token, expiresAt);
+    redirect(user.role === "ADMIN" ? "/admin/dashboard" : "/quiz");
+  } catch {
+    redirect("/login?error=auth");
+  }
+}
 
-  const ok = await verifyPassword(password, user.passwordHash);
-  if (!ok) redirect("/login?error=auth");
+export async function register(formData: FormData) {
+  const parsed = registerSchema.safeParse({
+    phone: formData.get("phone"),
+    name: formData.get("name"),
+    password: formData.get("password"),
+  });
 
-  await createSession(user.id);
-  redirect(user.role === "ADMIN" ? "/admin" : "/quiz");
+  if (!parsed.success) {
+    const msg = parsed.error.issues[0]?.message ?? "invalid";
+    redirect(`/register?error=${encodeURIComponent(msg)}`);
+  }
+
+  const { phone, name, password } = parsed.data;
+  try {
+    const { token, expiresAt } = await registerUser(phone, name, password);
+    await setSessionCookie(token, expiresAt);
+    redirect("/quiz");
+  } catch (err) {
+    if (err instanceof Error && err.message === "PHONE_TAKEN") {
+      redirect("/register?error=Số điện thoại đã được đăng ký");
+    }
+    redirect("/register?error=Đăng ký thất bại, vui lòng thử lại");
+  }
 }
 
 export async function logout() {
-  await clearSession();
+  await revokeSessionCookie();
   redirect("/login");
 }
-

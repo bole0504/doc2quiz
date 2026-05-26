@@ -1,0 +1,11 @@
+.DS_Store
+node_modules/
+.expo/
+.expo-shared/
+web/.next/
+web/out/
+mobile/.expo/
+mobile/.expo-shared/
+mobile/dist/
+*.log
+.env

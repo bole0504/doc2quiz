@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@docx2quiz/tokens": ["../packages/tokens/src/index.ts"]
     }
   },
   "include": [

@@ -37,8 +37,15 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ### Luồng sử dụng
 
-- Admin: vào `/admin` → bấm `+ Cấu hình bộ câu hỏi (DOCX)` để tạo ngân hàng → click vào ngân hàng → chỉnh đáp án/điểm liệt + tạo “bộ đề” ngay trong trang ngân hàng.
-- User: vào `/quiz` → chọn ngân hàng → chọn bộ đề/bộ trộn → làm bài → xem trạng thái Đang thi / Rớt / Đậu, có thể thi lại.
+- **Admin**: `/admin/dashboard` → **Tạo bộ câu hỏi** (`/admin/convert`, wizard 3 bước) → mở ngân hàng → chỉnh câu + tạo bộ đề.
+- **User (web)**: `/quiz` → chọn ngân hàng → thi → xem kết quả.
+- **User (mobile)**: xem [`mobile/README.md`](../mobile/README.md) — Expo app gọi `/api/v1/*`.
+
+### API v1 (mobile + web quiz client)
+
+- `POST /api/v1/auth/login` — `{ email, password }` → `{ token, user }`
+- `GET /api/v1/catalog` — Bearer hoặc cookie session
+- `GET /api/v1/variants/:id`, `PATCH /api/v1/attempts/:id`, `POST .../submit`
 
 ### Format DOCX đang hỗ trợ (MVP)
 
