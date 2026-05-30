@@ -36,7 +36,7 @@ export default function ExamScreen() {
     if (!variantId) return;
     const json = await fetchVariant(variantId);
     if (json.attempt.finished || !json.question) {
-      router.replace("/exams");
+      router.replace("/(tabs)/exams");
       return;
     }
     setData(json);
@@ -109,10 +109,19 @@ export default function ExamScreen() {
 
   async function doSubmit() {
     if (!data || !variantId) return;
-    Alert.alert("Nộp bài", "Bạn có chắc muốn nộp bài?", [
-      { text: "Hủy", style: "cancel" },
+    const answered = data.attempt.currentIndex;
+    const total = data.variant.totalQuestions;
+    const unanswered = total - answered;
+    const msg =
+      unanswered > 0
+        ? `Bạn đã trả lời ${answered}/${total} câu.\n⚠️ Còn ${unanswered} câu chưa làm — sau khi nộp không thể sửa.`
+        : `Bạn đã hoàn thành tất cả ${total} câu. Xác nhận nộp bài?`;
+
+    Alert.alert("Xác nhận nộp bài", msg, [
+      { text: "Làm tiếp", style: "cancel" },
       {
         text: "Nộp bài",
+        style: "destructive",
         onPress: async () => {
           setBusy(true);
           try {
@@ -212,7 +221,7 @@ export default function ExamScreen() {
       <View
         style={{
           flexDirection: "row",
-          gap: 12,
+          gap: 10,
           paddingHorizontal: 20,
           paddingBottom: insets.bottom + 16,
           paddingTop: 12,
@@ -220,6 +229,22 @@ export default function ExamScreen() {
           borderTopColor: theme.border,
         }}
       >
+        {question.index > 0 && (
+          <Pressable
+            onPress={() => router.back()}
+            style={{
+              height: 52,
+              paddingHorizontal: 16,
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: theme.border,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text style={{ fontSize: 14, color: theme.textMuted, fontWeight: "500" }}>← Trước</Text>
+          </Pressable>
+        )}
         <Pressable
           onPress={isLast ? doSubmit : goNext}
           disabled={!selected || busy}
@@ -234,7 +259,7 @@ export default function ExamScreen() {
           }}
         >
           <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>
-            {busy ? "..." : isLast ? "Nộp bài" : "Tiếp theo"}
+            {busy ? "..." : isLast ? "Nộp bài" : "Tiếp theo →"}
           </Text>
         </Pressable>
       </View>

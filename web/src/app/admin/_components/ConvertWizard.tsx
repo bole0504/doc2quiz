@@ -95,6 +95,7 @@ export default function ConvertWizard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const formRef = useRef<HTMLFormElement>(null);
+  const cachedFormDataRef = useRef<FormData | null>(null);
   const [step, setStep] = useState<1 | 2>(1);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,6 +113,9 @@ export default function ConvertWizard() {
     setError(null);
     const fd = new FormData(e.currentTarget);
     setBankTitle(String(fd.get("bankTitle") ?? ""));
+    // Cache full FormData (incl. file) so step 2's "Tạo bộ đề" can resend
+    // without depending on the step-1 inputs (which unmount in step 2).
+    cachedFormDataRef.current = fd;
     try {
       const res = await fetch("/api/admin/docx/preview", { method: "POST", body: fd });
       const data = (await res.json()) as PreviewResponse & { error?: string };
@@ -127,16 +131,19 @@ export default function ConvertWizard() {
   }, [router]);
 
   const onCreate = useCallback(async () => {
-    if (!formRef.current) return;
+    const fd = cachedFormDataRef.current ?? (formRef.current ? new FormData(formRef.current) : null);
+    if (!fd) {
+      setError("Thiếu dữ liệu form — vui lòng thử lại bước 1");
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
-      const fd = new FormData(formRef.current);
       const res = await fetch("/api/admin/docx/create", { method: "POST", body: fd });
       const data = (await res.json()) as { bankId?: string; error?: string };
       if (!res.ok) throw new Error(data.error ?? "Create failed");
       if (!data.bankId) throw new Error("Missing bankId");
-      router.push(`/admin/convert/review?bankId=${data.bankId}`);
+      router.push(`/admin/banks/${data.bankId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Lỗi không xác định");
     } finally {

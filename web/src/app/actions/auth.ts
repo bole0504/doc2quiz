@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { z } from "zod";
 import {
   loginWithCredentials,
@@ -31,13 +32,15 @@ export async function login(formData: FormData) {
   }
 
   const { identifier, password } = parsed.data;
+  let redirectTo = "/login?error=auth";
   try {
     const { token, expiresAt, user } = await loginWithCredentials(identifier, password);
     await setSessionCookie(token, expiresAt);
-    redirect(user.role === "ADMIN" ? "/admin/dashboard" : "/quiz");
-  } catch {
-    redirect("/login?error=auth");
+    redirectTo = user.role === "ADMIN" ? "/admin/dashboard" : "/quiz";
+  } catch (err) {
+    if (isRedirectError(err)) throw err;
   }
+  redirect(redirectTo);
 }
 
 export async function register(formData: FormData) {
@@ -53,16 +56,19 @@ export async function register(formData: FormData) {
   }
 
   const { phone, name, password } = parsed.data;
+  let redirectTo = "/quiz";
   try {
     const { token, expiresAt } = await registerUser(phone, name, password);
     await setSessionCookie(token, expiresAt);
-    redirect("/quiz");
   } catch (err) {
+    if (isRedirectError(err)) throw err;
     if (err instanceof Error && err.message === "PHONE_TAKEN") {
-      redirect("/register?error=Số điện thoại đã được đăng ký");
+      redirectTo = "/register?error=" + encodeURIComponent("Số điện thoại đã được đăng ký");
+    } else {
+      redirectTo = "/register?error=" + encodeURIComponent("Đăng ký thất bại, vui lòng thử lại");
     }
-    redirect("/register?error=Đăng ký thất bại, vui lòng thử lại");
   }
+  redirect(redirectTo);
 }
 
 export async function logout() {

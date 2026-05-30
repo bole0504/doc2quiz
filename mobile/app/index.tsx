@@ -24,5 +24,6 @@ export default function Index() {
     );
   }
 
-  return <Redirect href={hasToken ? "/exams" : "/login"} />;
+  // Redirect to tabs home or login
+  return <Redirect href={hasToken ? "/(tabs)" : "/login"} />;
 }

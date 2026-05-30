@@ -47,40 +47,31 @@
 
 ---
 
-## 🔧 Phase 2 — UX Hoàn Chỉnh (ƯU TIÊN CAO)
+## ✅ Phase 2 — UX Hoàn Chỉnh (HOÀN THÀNH)
 
 > Mục tiêu: App đủ điều kiện submit lên Store, UX hoàn chỉnh theo design prototype.
 
 ### Mobile
-- [ ] **Register screen** (`MobRegister`) — tên, email, password, confirm password
-- [ ] **Home screen** (`MobHome`) — greeting + avatar, CTA "Tiếp tục học", danh sách categories/recommended, bottom tab bar
-- [ ] **Bottom tab bar** — Trang chủ / Bộ đề / Lịch sử / Tài khoản (4 tabs)
-- [ ] **History screen** — danh sách các lần thi đã qua, filter theo trạng thái
-- [ ] **Account/Profile screen** — đổi theme palette, toggle dark mode, đăng xuất
-- [ ] **Multi-answer questions** — checkbox multi-select variant (design: `MobTakingExam variant="multi"`)
-- [ ] **Local resume** — lưu tiến độ local nếu mất mạng giữa chừng
-- [ ] **Confirmation sheet** trước khi nộp bài — list câu chưa trả lời
+- [x] **Register screen** — tên, SĐT, mật khẩu, client-side validate, gọi `POST /api/v1/auth/register`
+- [x] **Home screen** — greeting + avatar theo giờ, CTA "Tiếp tục học" / "Bắt đầu ôn thi", danh sách banks theo category
+- [x] **Bottom tab bar** — Trang chủ / Bộ đề / Lịch sử / Tài khoản (4 tabs, theme-aware)
+- [x] **History screen** — FlatList lịch sử thi với StatusBadge (Đậu/Rớt/Đang thi), empty state
+- [x] **Account/Profile screen** — profile card, 13 palette circles, dark mode Switch, đăng xuất
+- [x] **Confirmation sheet** trước khi nộp — hiển thị `answered/total`, cảnh báo câu chưa làm
+- [ ] **Multi-answer questions** — (Phase 3: chờ schema update)
+- [ ] **Local resume** — (Phase 3: offline-first)
 
 ### Admin Web
-- [ ] **Register admin** (`/register`) — tạo tài khoản biên tập viên mới (hiện chỉ có seed)
-- [ ] **User management** (`/admin/users`) — CRUD: list, invite, phân quyền (ADMIN/USER), deactivate
-- [ ] **Admin responsive** — sidebar collapse thành icon-only < 960px, hamburger < 768px
-- [ ] **Dark mode** — toggle trên topbar, lưu vào user preferences
-- [ ] **Full KPI dashboard** — biểu đồ lượt thi theo ngày, tỷ lệ đậu/rớt, top bộ đề
-
-### Schema Updates cần cho Phase 2
-```prisma
-model User {
-  themePalette String  @default("indigo")
-  themeDark    Boolean @default(false)
-  // ...
-}
-```
+- [x] **User management** (`/admin/users`) — list tất cả users, nâng/hạ quyền ADMIN↔USER, xóa user, tự-bảo vệ (không sửa/xóa chính mình)
+- [x] **Admin responsive** — full sidebar ≥1280px, icon-only 768–1279px, hamburger drawer <768px
+- [x] **Dark mode** — DarkModeToggle trên topbar, persist localStorage, `data-theme` attribute
+- [ ] **Register admin** — (Phase 3)
+- [ ] **Full KPI dashboard** — (Phase 3)
 
 ### Assets
-- [ ] Illustrations kết quả (pass/fail) thay thế emoji hiện tại
-- [ ] Logo thật thay placeholder Sparkles
-- [ ] App icon + splash screen cho Expo
+- [x] **Logo** — `LogoMark` SVG (document + check badge), dùng CSS vars `--pSoft` / `--p`
+- [ ] Illustrations kết quả (pass/fail) — (Phase 3)
+- [ ] App icon + splash screen cho Expo — (Phase 5)
 
 ---
 

@@ -6,7 +6,7 @@ export async function GET(req: Request) {
     const user = await resolveUserFromRequest(req);
     if (!user) return jsonError("UNAUTHORIZED", 401);
     return jsonOk({
-      user: { id: user.id, email: user.email, role: user.role },
+      user: { id: user.id, name: user.name, phone: user.phone, email: user.email, role: user.role },
     });
   } catch (err) {
     return handleApiError(err);

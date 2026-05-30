@@ -179,6 +179,21 @@ export async function deleteBank(formData: FormData) {
   redirect("/admin");
 }
 
+export async function deleteExam(formData: FormData) {
+  const user = await requireUser();
+  if (user.role !== "ADMIN") throw new Error("FORBIDDEN");
+
+  const examId = String(formData.get("examId") ?? "");
+  if (!examId) throw new Error("Missing examId");
+
+  await prisma.exam.delete({ where: { id: examId } });
+
+  const returnTo = formData.get("returnTo");
+  redirect(
+    typeof returnTo === "string" && returnTo.startsWith("/") ? returnTo : "/admin/exams"
+  );
+}
+
 export async function createExam(formData: FormData) {
   const user = await requireUser();
   if (user.role !== "ADMIN") throw new Error("FORBIDDEN");
@@ -247,4 +262,31 @@ export async function createExam(formData: FormData) {
       ? data.returnTo
       : null;
   redirect(safeReturnTo ?? "/admin");
+}
+
+// ── User management ──────────────────────────────────────────────
+
+export async function changeUserRole(formData: FormData) {
+  const caller = await requireUser();
+  if (caller.role !== "ADMIN") throw new Error("FORBIDDEN");
+
+  const userId = String(formData.get("userId") ?? "");
+  const role = formData.get("role");
+  if (!userId || (role !== "ADMIN" && role !== "USER")) throw new Error("INVALID_INPUT");
+  if (userId === caller.id) throw new Error("Cannot change your own role");
+
+  await prisma.user.update({ where: { id: userId }, data: { role } });
+  redirect("/admin/users");
+}
+
+export async function deleteUser(formData: FormData) {
+  const caller = await requireUser();
+  if (caller.role !== "ADMIN") throw new Error("FORBIDDEN");
+
+  const userId = String(formData.get("userId") ?? "");
+  if (!userId) throw new Error("INVALID_INPUT");
+  if (userId === caller.id) throw new Error("Cannot delete yourself");
+
+  await prisma.user.delete({ where: { id: userId } });
+  redirect("/admin/users");
 }

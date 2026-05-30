@@ -155,3 +155,23 @@ export async function submitAttempt(attemptId: string, variantId: string) {
     }
   );
 }
+
+export async function fetchMe() {
+  return apiFetch<{ user: PublicUser }>("/api/v1/me");
+}
+
+export type HistoryItem = {
+  id: string;
+  examName: string;
+  variantIndex: number;
+  status: string;
+  score: number | null;
+  total: number;
+  startedAt: string;
+  finishedAt: string | null;
+};
+
+export async function fetchHistory() {
+  const data = await apiFetch<{ history: HistoryItem[] }>("/api/v1/history");
+  return data.history;
+}
